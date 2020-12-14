@@ -1,0 +1,21 @@
+[package]
+name = "ternary-option"
+version = "0.1.0"
+authors = ["Jon Spalding <jon@cvpartner.com>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+serde_ternary_fields_macro = { path = "./serde_ternary_fields_macro", version = "0.1.0" }
+
+[dev-dependencies]
+serde_json = { version = "1" }
+
+[features]
+default = ["serde"]
+
+[[test]]
+name = "serde"
+path = "tests/serde.rs"
+required-features = ["serde"]
