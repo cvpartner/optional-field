@@ -32,6 +32,14 @@ impl<T> TernaryOption<T> {
         }
     }
 
+    pub fn map_value<U, F: FnOnce(T) -> U>(self, f: F) -> TernaryOption<U> {
+        match self {
+            Present(Some(x)) => Present(Some(f(x))),
+            Present(None) => Present(None),
+            Missing => Missing,
+        }
+    }
+
     pub fn map_or<U, F: FnOnce(Option<T>) -> Option<U>>(
         self,
         default: Option<U>,
@@ -39,6 +47,14 @@ impl<T> TernaryOption<T> {
     ) -> Option<U> {
         match self {
             Present(t) => f(t),
+            Missing => default,
+        }
+    }
+
+    pub fn map_value_or<U, F: FnOnce(T) -> U>(self, default: U, f: F) -> U {
+        match self {
+            Present(Some(t)) => f(t),
+            Present(None) => default,
             Missing => default,
         }
     }
@@ -54,27 +70,7 @@ impl<T> TernaryOption<T> {
         }
     }
 
-    pub fn map_present<U, F: FnOnce(T) -> U>(self, f: F) -> TernaryOption<U> {
-        match self {
-            Present(Some(x)) => Present(Some(f(x))),
-            Present(None) => Present(None),
-            Missing => Missing,
-        }
-    }
-
-    pub fn map_present_or<U, F: FnOnce(T) -> U>(self, default: U, f: F) -> U {
-        match self {
-            Present(Some(t)) => f(t),
-            Present(None) => default,
-            Missing => default,
-        }
-    }
-
-    pub fn map_present_or_else<U, D: FnOnce() -> U, F: FnOnce(T) -> U>(
-        self,
-        default: D,
-        f: F,
-    ) -> U {
+    pub fn map_value_or_else<U, D: FnOnce() -> U, F: FnOnce(T) -> U>(self, default: D, f: F) -> U {
         match self {
             Present(Some(t)) => f(t),
             Present(None) => default(),
@@ -86,6 +82,16 @@ impl<T> TernaryOption<T> {
         match self {
             Present(val) => val,
             Missing => panic!("called `TernaryOption::unwrap()` on a `Missing` value"),
+        }
+    }
+
+    pub fn unwrap_value(self) -> T {
+        match self {
+            Present(Some(t)) => t,
+            Present(None) => {
+                panic!("called `TernaryOption::unwrap_value()` on a `Present(None)` value")
+            }
+            Missing => panic!("called `TernaryOption::unwrap_value()` on a `Missing` value"),
         }
     }
 

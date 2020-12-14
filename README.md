@@ -1,18 +1,26 @@
 # TernaryOption
 
-Provides a Rust type and serialization/deserialization implementations for values that can be represented 
-by 3 states: missing, present but null and present with a value. 
+Provides a Rust type and serialization/deserialization implementations for values that can be represented
+by 3 states: missing, present but null and present with a value.
 
-This can be useful when using JSON or other formats whereby the default in serde is to treat missing keys 
+```rust
+pub enum TernaryOption<T> {
+    Missing,
+    Present(Option<T>),
+}
+
+```
+
+This can be useful when using JSON or other formats whereby the default in serde is to treat missing keys
 and null values as the same, deserializing them to `Option::None`. A similar problem exists when serializing
 as you have to create your own 3-state enum and tag each field with `skip_serializing_if` in order to not
 serialize a field.
 
-This can be problematic with APIs where partial objects are provided and you don't know whether you need to 
-set the value to null or if the key was missing from the incoming payload meaning the value should be left 
+This can be problematic with APIs where partial objects or diffs are provided and you don't know whether you need to
+set the value to null or not update value should be left
 alone.
 
-By using TernaryOption you are able to distinguish between null values and missing keys and get serde to 
+By using TernaryOption you are able to distinguish between null values and missing keys and get serde to
 behave correctly in these scenarios.
 
 ```rust
