@@ -242,6 +242,80 @@ impl<T> From<Option<Option<T>>> for TernaryOption<T> {
     }
 }
 
+impl<T: Copy> TernaryOption<&T> {
+    /// Maps a `TernaryOption<&T>` to a `TernaryOption<T>` by copying the contents of the
+    /// option.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ternary_option::TernaryOption::*;
+    /// let x = 12;
+    /// let opt_x = Some(&x);
+    /// assert_eq!(opt_x, Some(&12));
+    /// let copied = opt_x.copied();
+    /// assert_eq!(copied, Some(12));
+    /// ```
+    pub fn copied(self) -> TernaryOption<T> {
+        self.map_value(|&t| t)
+    }
+}
+
+impl<T: Copy> TernaryOption<&mut T> {
+    /// Maps a `TernaryOption<&mut T>` to an `TernaryOption<T>` by copying the contents of the
+    /// option.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ternary_option::TernaryOption::*;
+    /// let mut x = 12;
+    /// let opt_x = Present(Some(&x));
+    /// assert_eq!(opt_x, Present(Some(&x)));
+    /// let copied = opt_x.copied();
+    /// assert_eq!(copied, Present(Some(12)));
+    /// ```
+    pub fn copied(self) -> TernaryOption<T> {
+        self.map_value(|&mut t| t)
+    }
+}
+
+impl<T: Clone> TernaryOption<&T> {
+    /// Maps a `TernaryOption<&T>` to a `TernaryOption<T>` by cloning the contents .
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ternary_option::TernaryOption::*;
+    /// let x = 12;
+    /// let opt_x = Present(Some(&x));
+    /// assert_eq!(opt_x, Present(Some(&x)));
+    /// let cloned = opt_x.cloned();
+    /// assert_eq!(cloned, Present(Some(12)));
+    /// ```
+    pub fn cloned(self) -> TernaryOption<T> {
+        self.map(|t| t.cloned())
+    }
+}
+
+impl<T: Clone> TernaryOption<&mut T> {
+    /// Maps a `TernaryOption<&mut T>` to a `TernaryOption<T>` by cloning the contents.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ternary_option::TernaryOption::*;
+    /// let mut x = 12;
+    /// let opt_x = Present(Some(&mut x));
+    /// assert_eq!(opt_x, Present(Some(&mut 12)));
+    /// let cloned = opt_x.cloned();
+    /// assert_eq!(cloned, Present(Some(12)));
+    /// ```
+    pub fn cloned(self) -> TernaryOption<T> {
+        self.map(|t| t.cloned())
+    }
+}
+
 #[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for TernaryOption<T>
 where
