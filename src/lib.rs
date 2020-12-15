@@ -98,6 +98,22 @@ impl<T> TernaryOption<T> {
     // TODO: all the other methods on Option plus their `present` counterparts :P
 }
 
+impl<T: Default> TernaryOption<T> {
+    pub fn unwrap_or_default(self) -> Option<T> {
+        match self {
+            Present(x) => x,
+            Missing => Default::default(),
+        }
+    }
+
+    pub fn unwrap_value_or_default(self) -> T {
+        match self {
+            Present(Some(x)) => x,
+            _ => Default::default(),
+        }
+    }
+}
+
 impl<T> Default for TernaryOption<T> {
     fn default() -> Self {
         Missing
