@@ -25,6 +25,32 @@ impl<T> TernaryOption<T> {
         matches!(self, Present(Some(_)))
     }
 
+    pub fn contains<U>(&self, x: &U) -> bool
+    where
+        U: PartialEq<T>,
+    {
+        match self {
+            Present(Some(y)) => x == y,
+            _ => false,
+        }
+    }
+
+    pub fn as_ref(&self) -> TernaryOption<&T> {
+        match *self {
+            Present(Some(ref x)) => Present(Some(x)),
+            Present(None) => Present(None),
+            Missing => Missing,
+        }
+    }
+
+    pub fn as_mut(&mut self) -> TernaryOption<&mut T> {
+        match *self {
+            Present(Some(ref mut x)) => Present(Some(x)),
+            Present(None) => Present(None),
+            Missing => Missing,
+        }
+    }
+
     pub fn map<U, F: FnOnce(Option<T>) -> Option<U>>(self, f: F) -> TernaryOption<U> {
         match self {
             Present(x) => Present(f(x)),
@@ -95,7 +121,82 @@ impl<T> TernaryOption<T> {
         }
     }
 
-    // TODO: all the other methods on Option plus their `present` counterparts :P
+    pub fn unwrap_or(self, default: T) -> Option<T> {
+        match self {
+            Present(val) => val,
+            Missing => Some(default),
+        }
+    }
+
+    pub fn unwrap_value_or(self, default: T) -> T {
+        match self {
+            Present(Some(t)) => t,
+            _ => default,
+        }
+    }
+
+    pub fn unwrap_or_else<F: FnOnce() -> Option<T>>(self, f: F) -> Option<T> {
+        match self {
+            Present(x) => x,
+            Missing => f(),
+        }
+    }
+
+    pub fn unwrap_value_or_else<F: FnOnce() -> T>(self, f: F) -> T {
+        match self {
+            Present(Some(x)) => x,
+            _ => f(),
+        }
+    }
+
+    pub fn expect(self, msg: &str) -> Option<T> {
+        match self {
+            Present(val) => val,
+            Missing => panic!("{}", msg),
+        }
+    }
+
+    pub fn expect_value(self, msg: &str) -> T {
+        match self {
+            Present(Some(val)) => val,
+            _ => panic!("{}", msg),
+        }
+    }
+
+    pub fn flatten(self) -> Option<T> {
+        match self {
+            Present(opt) => opt,
+            Missing => None,
+        }
+    }
+
+    pub fn ok_or<E>(self, err: E) -> Result<Option<T>, E> {
+        match self {
+            Present(v) => Ok(v),
+            Missing => Err(err),
+        }
+    }
+
+    pub fn ok_value_or<E>(self, err: E) -> Result<T, E> {
+        match self {
+            Present(Some(v)) => Ok(v),
+            _ => Err(err),
+        }
+    }
+
+    pub fn ok_or_else<E, F: FnOnce() -> E>(self, err: F) -> Result<Option<T>, E> {
+        match self {
+            Present(v) => Ok(v),
+            Missing => Err(err()),
+        }
+    }
+
+    pub fn ok_value_or_else<E, F: FnOnce() -> E>(self, err: F) -> Result<T, E> {
+        match self {
+            Present(Some(v)) => Ok(v),
+            _ => Err(err()),
+        }
+    }
 }
 
 impl<T: Default> TernaryOption<T> {
@@ -117,6 +218,12 @@ impl<T: Default> TernaryOption<T> {
 impl<T> Default for TernaryOption<T> {
     fn default() -> Self {
         Missing
+    }
+}
+
+impl<T> From<T> for TernaryOption<T> {
+    fn from(val: T) -> TernaryOption<T> {
+        Present(Some(val))
     }
 }
 
