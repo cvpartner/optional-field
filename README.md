@@ -1,10 +1,10 @@
-# TernaryOption
+# Optional Field
 
 Provides a Rust type and serialization/deserialization implementations for values that can be represented
 by 3 states: missing, present but null and present with a value.
 
 ```rust
-pub enum TernaryOption<T> {
+pub enum Field<T> {
     Missing,
     Present(Option<T>),
 }
@@ -17,23 +17,22 @@ as you have to create your own 3-state enum and tag each field with `skip_serial
 serialize a field.
 
 This can be problematic with APIs where partial objects or diffs are provided and you don't know whether you need to
-set the value to null or not update value should be left
-alone.
+set the value to null or not update value should be left alone.
 
-By using TernaryOption you are able to distinguish between null values and missing keys and get serde to
+By using `Field` you are able to distinguish between null values and missing keys and get serde to
 behave correctly in these scenarios.
 
 ```rust
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use ternary_option::{TernaryOption::{self, *}, serde_ternary_fields};
+use optional_field::{Field::{self, *}, serde_optional_fields};
 
-#[serde_ternary_fields]
+#[serde_optional_fields]
 #[derive(Debug, Serialize, Deserialize)]
 struct Thing {
-    one: TernaryOption<u8>,
-    two: TernaryOption<u8>,
-    three: TernaryOption<u8>,
+    one: Field<u8>,
+    two: Field<u8>,
+    three: Field<u8>,
 }
 
 fn main() {

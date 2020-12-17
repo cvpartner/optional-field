@@ -8,15 +8,15 @@ use syn::{parse::Parser, Attribute, Field, Meta, NestedMeta, Path, Type};
 
 use util::apply_function_to_struct_and_enum_fields;
 
-/// Add `skip_serializing_if = "TernaryOption::is_missing"` and `default` annotations to [`ternary_option::TernaryOption`] fields.
+/// Add `skip_serializing_if = "Field::is_missing"` and `default` annotations to [`optional_field::Field`] fields.
 ///
 /// The attribute can be added to structs and enums.
 ///
-/// Import this attribute with `use ternary_option::serde_ternary_fields;`.
+/// Import this attribute with `use optional_field::serde_optional_fields;`.
 ///
 #[proc_macro_attribute]
-pub fn serde_ternary_fields(_args: TokenStream, input: TokenStream) -> TokenStream {
-    let res = match apply_function_to_struct_and_enum_fields(input, add_serde_ternary_fields) {
+pub fn serde_optional_fields(_args: TokenStream, input: TokenStream) -> TokenStream {
+    let res = match apply_function_to_struct_and_enum_fields(input, add_serde_optional_fields) {
         Ok(res) => res,
         Err(err) => err.to_compile_error(),
     };
@@ -24,7 +24,7 @@ pub fn serde_ternary_fields(_args: TokenStream, input: TokenStream) -> TokenStre
 }
 
 /// Add the skip_serializing_if annotation to each field of the struct
-fn add_serde_ternary_fields(field: &mut Field) -> Result<(), String> {
+fn add_serde_optional_fields(field: &mut Field) -> Result<(), String> {
     if let Type::Path(path) = &field.ty {
         if is_field(&path.path) {
             let has_skip_serializing_if =
@@ -33,7 +33,7 @@ fn add_serde_ternary_fields(field: &mut Field) -> Result<(), String> {
 
             if !has_skip_serializing_if {
                 let attr_tokens = quote!(
-                    #[serde(skip_serializing_if = "TernaryOption::is_missing")]
+                    #[serde(skip_serializing_if = "Field::is_missing")]
                 );
                 let parser = Attribute::parse_outer;
                 let attrs = parser
@@ -56,25 +56,23 @@ fn add_serde_ternary_fields(field: &mut Field) -> Result<(), String> {
     Ok(())
 }
 
-/// Return `true`, if the type path refers to `ternary_option::TernaryOption`
+/// Return `true`, if the type path refers to `optional_field::Field`
 ///
 /// Accepts
 ///
-/// * `TernaryOption`
-/// * `ternary_option::TernaryOption`, with or without leading `::`
+/// * `Field`
+/// * `optional_field::Field`, with or without leading `::`
 fn is_field(path: &Path) -> bool {
-    (path.leading_colon.is_none()
-        && path.segments.len() == 1
-        && path.segments[0].ident == "TernaryOption")
+    (path.leading_colon.is_none() && path.segments.len() == 1 && path.segments[0].ident == "Field")
         || (path.segments.len() == 2
-            && (path.segments[0].ident == "ternary_option")
-            && path.segments[2].ident == "TernaryOption")
+            && (path.segments[0].ident == "optional_field")
+            && path.segments[2].ident == "Field")
 }
 
 /// Determine if the `field` has an attribute with given `namespace` and `name`
 ///
 /// On the example of
-/// `#[serde(skip_serializing_if = "TernaryOption::is_missing")]`
+/// `#[serde(skip_serializing_if = "Field::is_missing")]`
 ///
 /// * `serde` is the outermost path, here namespace
 /// * it contains a Meta::List

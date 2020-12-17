@@ -1,5 +1,5 @@
 [package]
-name = "ternary-option"
+name = "optional-field"
 version = "0.1.0"
 authors = ["Jon Spalding <jon@cvpartner.com>"]
 edition = "2018"
@@ -7,7 +7,7 @@ publish = false
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true }
-serde_ternary_fields_macro = { path = "./serde_ternary_fields_macro", version = "0.1.0" }
+serde_optional_fields_macro = { path = "./serde_optional_fields_macro", version = "0.1.0" }
 
 [dev-dependencies]
 serde_json = { version = "1" }

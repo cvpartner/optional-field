@@ -1,14 +1,14 @@
+use optional_field::serde_optional_fields;
+use optional_field::Field::{self, *};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use ternary_option::serde_ternary_fields;
-use ternary_option::TernaryOption::{self, *};
 
-#[serde_ternary_fields]
+#[serde_optional_fields]
 #[derive(Debug, Serialize, Deserialize)]
 struct Thing {
     mandatory: u8,
-    optional: Option<u8>,
-    ternary: TernaryOption<u8>,
+    option: Option<u8>,
+    field: Field<u8>,
 }
 
 #[test]
@@ -16,14 +16,14 @@ fn deserialize_missing() {
     let thing = serde_json::from_value::<Thing>(json!(
         {
             "mandatory": 1,
-            "optional": null,
+            "option": null,
         }
     ))
     .unwrap();
 
     assert_eq!(1, thing.mandatory);
-    assert_eq!(None, thing.optional);
-    assert_eq!(Missing, thing.ternary);
+    assert_eq!(None, thing.option);
+    assert_eq!(Missing, thing.field);
 }
 
 #[test]
@@ -31,15 +31,15 @@ fn deserialize_null() {
     let thing = serde_json::from_value::<Thing>(json!(
         {
             "mandatory": 1,
-            "optional": 2,
-            "ternary": null
+            "option": 2,
+            "field": null
         }
     ))
     .unwrap();
 
     assert_eq!(1, thing.mandatory);
-    assert_eq!(Some(2), thing.optional);
-    assert_eq!(Present(None), thing.ternary);
+    assert_eq!(Some(2), thing.option);
+    assert_eq!(Present(None), thing.field);
 }
 
 #[test]
@@ -47,23 +47,23 @@ fn deserialize_value() {
     let thing = serde_json::from_value::<Thing>(json!(
         {
             "mandatory": 1,
-            "optional": null,
-            "ternary": 2
+            "option": null,
+            "field": 2
         }
     ))
     .unwrap();
 
     assert_eq!(1, thing.mandatory);
-    assert_eq!(None, thing.optional);
-    assert_eq!(Present(Some(2)), thing.ternary);
+    assert_eq!(None, thing.option);
+    assert_eq!(Present(Some(2)), thing.field);
 }
 
 #[test]
 fn serialize_value() {
     let thing = Thing {
         mandatory: 1,
-        optional: None,
-        ternary: Present(Some(2)),
+        option: None,
+        field: Present(Some(2)),
     };
 
     let json = serde_json::to_value(thing).unwrap();
@@ -72,8 +72,8 @@ fn serialize_value() {
         json!(
             {
                 "mandatory": 1,
-                "optional": null,
-                "ternary": 2
+                "option": null,
+                "field": 2
             }
         ),
         json
@@ -84,8 +84,8 @@ fn serialize_value() {
 fn serialize_null() {
     let thing = Thing {
         mandatory: 1,
-        optional: Some(2),
-        ternary: Present(None),
+        option: Some(2),
+        field: Present(None),
     };
 
     let json = serde_json::to_value(thing).unwrap();
@@ -94,8 +94,8 @@ fn serialize_null() {
         json!(
             {
                 "mandatory": 1,
-                "optional": 2,
-                "ternary": null
+                "option": 2,
+                "field": null
             }
         ),
         json
@@ -106,8 +106,8 @@ fn serialize_null() {
 fn serialize_missing() {
     let thing = Thing {
         mandatory: 1,
-        optional: None,
-        ternary: Missing,
+        option: None,
+        field: Missing,
     };
 
     let json = serde_json::to_value(thing).unwrap();
@@ -116,7 +116,7 @@ fn serialize_missing() {
         json!(
             {
                 "mandatory": 1,
-                "optional": null,
+                "option": null,
             }
         ),
         json
