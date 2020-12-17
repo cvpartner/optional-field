@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -313,6 +315,48 @@ impl<T: Clone> TernaryOption<&mut T> {
     /// ```
     pub fn cloned(self) -> TernaryOption<T> {
         self.map(|t| t.cloned())
+    }
+}
+
+impl<T: Deref> TernaryOption<T> {
+    /// Converts from `TernaryOption<T>` (or `&TernaryOption<T>`) to `TernaryOption<&T::Target>`.
+    ///
+    /// Leaves the original TernaryOption in-place, creating a new one with a reference
+    /// to the original one, additionally coercing the contents via [`Deref`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ternary_option::TernaryOption::{self, *};
+    /// let x: TernaryOption<String> = Present(Some("hey".to_owned()));
+    /// assert_eq!(x.as_deref(), Present(Some("hey")));
+    ///
+    /// let x: TernaryOption<String> = Present(None);
+    /// assert_eq!(x.as_deref(), Present(None));
+    /// ```
+    pub fn as_deref(&self) -> TernaryOption<&T::Target> {
+        self.as_ref().map_value(|t| t.deref())
+    }
+}
+
+impl<T: DerefMut> TernaryOption<T> {
+    /// Converts from `TernaryOption<T>` (or `&mut TernaryOption<T>`) to `TernaryOption<&mut T::Target>`.
+    ///
+    /// Leaves the original `TernaryOption` in-place, creating a new one containing a mutable reference to
+    /// the inner type's `Deref::Target` type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ternary_option::TernaryOption::{self, *};
+    /// let mut x: TernaryOption<String> = Present(Some("hey".to_owned()));
+    /// assert_eq!(x.as_deref_mut().map_value(|x| {
+    ///     x.make_ascii_uppercase();
+    ///     x
+    /// }), Present(Some("HEY".to_owned().as_mut_str())));
+    /// ```
+    pub fn as_deref_mut(&mut self) -> TernaryOption<&mut T::Target> {
+        self.as_mut().map_value(|t| t.deref_mut())
     }
 }
 
