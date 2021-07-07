@@ -1,0 +1,27 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: publish crates
+      uses: katyo/publish-crates@v1
+      with:
+        registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        dry-run: true
