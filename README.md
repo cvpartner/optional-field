@@ -75,6 +75,16 @@ fn main() {
 }
 ```
 
+## Features
+
+By default `optional-field` has serde and the serde macro as dependencies. If you
+wish to use `optional-field` without pulling in serde you can set `default-features` to false.
+
+```toml
+[dependencies]
+optional-field = { version = "0.1.1", default-features = false }
+```
+
 ## License
 
 MIT license ([LICENSE.txt](LICENSE.txt) or http://opensource.org/licenses/MIT)

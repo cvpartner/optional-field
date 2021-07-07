@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["CV Partner <techsupport@cvpartner.com>"]
 edition = "2018"
 license = "MIT"
+description = "Macro for optional-field crate serde integration"
+repository = "https://github.com/cvpartner/optional-field/tree/master/optional-fields-serde-macro"
+keywords = ["serde", "trinary", "option", "field"]
 
 [lib]
 proc-macro = true
