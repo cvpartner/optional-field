@@ -1,6 +1,6 @@
 [package]
 name = "optional-field"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["CV Partner <techsupport@cvpartner.com>"]
 edition = "2018"
 license = "MIT"
