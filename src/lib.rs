@@ -82,7 +82,7 @@ impl<T> Field<T> {
     ///
     /// # Examples
     ///
-    /// Converts an `Field<`[`String`]`>` into an `Field<`[`usize`]`>`, preserving the original.
+    /// Converts a `Field<`[`String`]`>` into an `Field<`[`usize`]`>`, preserving the original.
     /// The [`map`] method takes the `self` argument by value, consuming the original,
     /// so this technique uses `as_ref` to first take an `Field` to a reference
     /// to the value inside the original.
@@ -129,12 +129,12 @@ impl<T> Field<T> {
         }
     }
 
-    /// Maps an `Field<T>` to `Field<U>` by applying a function to the value contained in
+    /// Maps a `Field<T>` to `Field<U>` by applying a function to the value contained in
     /// the inner `Option`.
     ///
     /// # Examples
     ///
-    /// Converts an `Field<`[`String`]`>` into an `Field<`[`usize`]`>`, consuming the original:
+    /// Converts a `Field<`[`String`]`>` into an `Field<`[`usize`]`>`, consuming the original:
     ///
     /// [`String`]: ../../std/string/struct.String.html
     /// ```
@@ -154,18 +154,18 @@ impl<T> Field<T> {
         }
     }
 
-    /// Maps an `Field<T>` to `Field<U>` by applying a function to the option contained in `Present`.
+    /// Maps a `Field<T>` to `Field<U>` by applying a function to the option contained in `Present`.
     ///
     /// # Examples
     ///
-    /// Converts an `Field<`[`String`]`>` into an `Field<`[`usize`]`>`, consuming the original:
+    /// Converts a `Field<`[`String`]`>` into an `Field<`[`usize`]`>`, consuming the original:
     ///
     /// [`String`]: ../../std/string/struct.String.html
     /// ```
     /// # use optional_field::Field::{*, self};
     /// let maybe_some_string = Present(Some(String::from("Hello, World!")));
-    /// // `Field::map` takes self *by value*, consuming `maybe_some_string`
-    /// let maybe_some_len = maybe_some_string.map_present(|_| None);
+    /// // `Field::map_present` takes self *by value*, consuming `maybe_some_string`
+    /// let maybe_some_len = maybe_some_string.map_present(|s| None);
     ///
     /// assert_eq!(maybe_some_len, Present::<usize>(None));
     /// ```
@@ -230,6 +230,21 @@ impl<T> Field<T> {
         }
     }
 
+    /// Computes a default function result if the field is Missing or Present(None), or
+    /// applies a different function to the contained value (if any).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let k = 21;
+    ///
+    /// let x = Present(Some("foo"));
+    /// assert_eq!(x.map_or_else(|| 2 * k, |v| v.len()), 3);
+    ///
+    /// let x: Option<&str> = None;
+    /// assert_eq!(x.map_or_else(|| 2 * k, |v| v.len()), 42);
+    /// ```
     #[inline]
     pub fn map_or_else<U, D: FnOnce() -> U, F: FnOnce(T) -> U>(self, default: D, f: F) -> U {
         match self {
@@ -239,6 +254,21 @@ impl<T> Field<T> {
         }
     }
 
+    /// Computes a default function result (if missing), or
+    /// applies a different function to the contained value (if any).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let k = 21;
+    ///
+    /// let x = Present(Some("foo"));
+    /// assert_eq!(x.map_or_else(|| 2 * k, |v| v.len()), 3);
+    ///
+    /// let x: Option<&str> = None;
+    /// assert_eq!(x.map_or_else(|| 2 * k, |v| v.len()), 42);
+    /// ```
     #[inline]
     pub fn map_present_or_else<U, D: FnOnce() -> Option<U>, F: FnOnce(Option<T>) -> Option<U>>(
         self,
@@ -251,6 +281,25 @@ impl<T> Field<T> {
         }
     }
 
+    /// Returns the contained [`Some`] value, consuming the `self` value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the self value equals [`Missing`] or Present(None).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x = Present(Some("air"));
+    /// assert_eq!(x.unwrap(), "air");
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<&str> = Present(None);
+    /// assert_eq!(x.unwrap(), "air"); // fails
+    /// ```
     pub fn unwrap(self) -> T {
         match self {
             Present(Some(t)) => t,
@@ -261,6 +310,25 @@ impl<T> Field<T> {
         }
     }
 
+    /// Returns the contained option, consuming the `self` value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the self value equals [`Missing`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x = Present(Some("air"));
+    /// assert_eq!(x.unwrap_present(), Some("air"));
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<&str> = Missing;
+    /// assert_eq!(x.unwrap(), "air"); // fails
+    /// ```
     pub fn unwrap_present(self) -> Option<T> {
         match self {
             Present(val) => val,
@@ -268,6 +336,22 @@ impl<T> Field<T> {
         }
     }
 
+    /// Returns the contained [`Some`] value or a provided default.
+    ///
+    /// Arguments passed to `unwrap_or` are eagerly evaluated; if you are passing
+    /// the result of a function call, it is recommended to use [`unwrap_or_else`],
+    /// which is lazily evaluated.
+    ///
+    /// [`unwrap_or_else`]: Field::unwrap_or_else
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// assert_eq!(Present(Some("car")).unwrap_or("bike"), "car");
+    /// assert_eq!(Present(None).unwrap_or("bike"), "bike");
+    /// assert_eq!(Missing.unwrap_or("bike"), "bike");
+    /// ```
     pub fn unwrap_or(self, default: T) -> T {
         match self {
             Present(Some(t)) => t,
@@ -275,13 +359,34 @@ impl<T> Field<T> {
         }
     }
 
-    pub fn unwrap_present_or(self, default: T) -> Option<T> {
+    /// Returns the contained [`Present`] value or a provided default.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// assert_eq!(Present(Some("car")).unwrap_present_or(Some("bike")), Some("car"));
+    /// assert_eq!(Present(None).unwrap_present_or(Some("bike")), None);
+    /// assert_eq!(Missing.unwrap_present_or(Some("bike")), Some("bike"));
+    /// ```
+    pub fn unwrap_present_or(self, default: Option<T>) -> Option<T> {
         match self {
             Present(val) => val,
-            Missing => Some(default),
+            Missing => default,
         }
     }
 
+    /// Returns the contained [`Some`] value or computes it from a closure.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let k = 10;
+    /// assert_eq!(Present(Some(4)).unwrap_or_else(|| 2 * k), 4);
+    /// assert_eq!(Present(None).unwrap_or_else(|| 2 * k), 20);
+    /// assert_eq!(Missing.unwrap_or_else(|| 2 * k), 20);
+    /// ```
     pub fn unwrap_or_else<F: FnOnce() -> T>(self, f: F) -> T {
         match self {
             Present(Some(x)) => x,
@@ -289,6 +394,16 @@ impl<T> Field<T> {
         }
     }
 
+    /// Returns the contained [`Present`] value or computes it from a closure.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// assert_eq!(Present(Some(4)).unwrap_present_or_else(|| Some(10)), Some(4));
+    /// assert_eq!(Present(None).unwrap_present_or_else(|| Some(20)), None);
+    /// assert_eq!(Missing.unwrap_present_or_else(|| Some(30)), Some(30));
+    /// ```
     pub fn unwrap_present_or_else<F: FnOnce() -> Option<T>>(self, f: F) -> Option<T> {
         match self {
             Present(x) => x,
@@ -296,6 +411,26 @@ impl<T> Field<T> {
         }
     }
 
+    /// Returns the contained [`Some`] value from within [`Present`], consuming the `self` value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the value is a [`Missing`] or ['None'] with a custom panic message provided by
+    /// `msg`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x = Present(Some("value"));
+    /// assert_eq!(x.expect("fruits are healthy"), "value");
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<Option<&str>> = Missing;
+    /// x.expect("fruits are healthy"); // panics with `fruits are healthy`
+    /// ```
     pub fn expect(self, msg: &str) -> T {
         match self {
             Present(Some(val)) => val,
@@ -303,17 +438,30 @@ impl<T> Field<T> {
         }
     }
 
+    /// Returns the contained [`Option`] in the [`Present`], consuming the `self` value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the value is a [`Missing`] with a custom panic message provided by
+    /// `msg`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<Option<&str>> = Present(None);
+    /// assert_eq!(x.expect_present("fruits are healthy"), None);
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<Option<&str>> = Missing;
+    /// x.expect("fruits are healthy"); // panics with `fruits are healthy`
+    /// ```
     pub fn expect_present(self, msg: &str) -> Option<T> {
         match self {
             Present(val) => val,
             Missing => panic!("{}", msg),
-        }
-    }
-
-    pub fn flatten(self) -> Option<T> {
-        match self {
-            Present(opt) => opt,
-            Missing => None,
         }
     }
 
