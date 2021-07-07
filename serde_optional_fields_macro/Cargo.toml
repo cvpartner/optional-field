@@ -1,9 +1,10 @@
 [package]
 name = "serde_optional_fields_macro"
 version = "0.1.0"
-authors = ["Jon Spalding <jon@cvpartner.com>"]
+authors = ["CV Partner <techsupport@cvpartner.com>"]
 edition = "2018"
 publish = false
+license = "MIT"
 
 [lib]
 proc-macro = true

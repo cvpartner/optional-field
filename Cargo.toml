@@ -3,7 +3,6 @@ name = "optional-field"
 version = "0.1.0"
 authors = ["CV Partner <techsupport@cvpartner.com>"]
 edition = "2018"
-publish = false
 license = "MIT"
 readme = "README.md"
 description = "Alternative data type to Option for representing values that can have 3 states: present, missing or null"
