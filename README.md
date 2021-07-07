@@ -49,3 +49,32 @@ fn main() {
     assert_eq!(Missing, thing.three);
 }
 ```
+
+## Usage
+
+[src/lib.rs](Field) implements many of the methods you are familiar with
+on Option such as `map`, `unwrap`, `as_ref` etc. `Field` will return the value
+from within the `Option` for these fields but also provides an equivalent set of methods for accessing the `Option` itself. These equivalent methods follow the
+pattern of adding `_present` to the method name. For example, given `Present(Some(100))`, `unwrap()` will return `100` whereas `unwrap_present()` will return `Some(100)`.
+
+```rust
+use optional_field::{Field::{self, *}};
+
+struct Thing {
+    one: Field<u8>,
+    two: Field<u8>,
+    three: Field<u8>,
+}
+
+fn main() {
+    let num_field = Present(Some(100));
+    // Calling map gets the value out of the Option within Present
+    assert_eq!(200, num_field.map(|n| n * 2));
+    // Calling map_present gets the option out of Present
+    assert_eq!(false, num_field.map_present(|opt| opt.is_none()));
+}
+```
+
+## License
+
+MIT license ([LICENSE.txt](LICENSE.txt) or http://opensource.org/licenses/MIT)
