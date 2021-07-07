@@ -4,7 +4,7 @@ use std::ops::{Deref, DerefMut};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[cfg(feature = "serde")]
-pub use serde_optional_fields_macro::serde_optional_fields;
+pub use optional_fields_serde_macro::serde_optional_fields;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Field<T> {

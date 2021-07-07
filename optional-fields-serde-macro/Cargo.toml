@@ -1,9 +1,8 @@
 [package]
-name = "serde_optional_fields_macro"
+name = "optional-fields-serde-macro"
 version = "0.1.0"
 authors = ["CV Partner <techsupport@cvpartner.com>"]
 edition = "2018"
-publish = false
 license = "MIT"
 
 [lib]

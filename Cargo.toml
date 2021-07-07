@@ -1,3 +1,8 @@
+[workspace]
+members = [
+    "optional-fields-serde-macro",
+]
+
 [package]
 name = "optional-field"
 version = "0.1.1"
@@ -11,7 +16,7 @@ keywords = ["serde", "trinary", "option", "field"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true }
-serde_optional_fields_macro = { path = "./serde_optional_fields_macro", version = "0.1.0" }
+optional-fields-serde-macro = { path = "./optional-fields-serde-macro", version = "0.1.0" }
 
 [dev-dependencies]
 serde_json = { version = "1" }

@@ -25,7 +25,7 @@ behave correctly in these scenarios.
 ```rust
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use optional_field::{Field::{self, *}, serde_optional_fields};
+use optional_field::{Field, serde_optional_fields};
 
 #[serde_optional_fields]
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,9 +44,9 @@ fn main() {
     ))
     .unwrap();
 
-    assert_eq!(Present(Some(1)), thing.one);
-    assert_eq!(Present(None), thing.two);
-    assert_eq!(Missing, thing.three);
+    assert_eq!(Field::Present(Some(1)), thing.one);
+    assert_eq!(Field::Present(None), thing.two);
+    assert_eq!(Field::Missing, thing.three);
 }
 ```
 
@@ -58,7 +58,7 @@ from within the `Option` for these methods but also provides an equivalent set o
 pattern of adding `_present` to the method name. For example, given `Present(Some(100))`, `unwrap()` will return `100` whereas `unwrap_present()` will return `Some(100)`.
 
 ```rust
-use optional_field::{Field::{self, *}};
+use optional_field::Field;
 
 struct Thing {
     one: Field<u8>,
@@ -67,7 +67,7 @@ struct Thing {
 }
 
 fn main() {
-    let num_field = Present(Some(100));
+    let num_field = Field::Present(Some(100));
     // Calling map gets the value out of the Option within Present
     assert_eq!(200, num_field.map(|n| n * 2));
     // Calling map_present gets the option out of Present
