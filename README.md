@@ -54,7 +54,7 @@ fn main() {
 
 [Field](src/lib.rs) implements many of the methods you are familiar with
 on Option such as `map`, `unwrap`, `as_ref` etc. `Field` will return the value
-from within the `Option` for these fields but also provides an equivalent set of methods for accessing the `Option` itself. These equivalent methods follow the
+from within the `Option` for these methods but also provides an equivalent set of methods for accessing the `Option` itself. These equivalent methods follow the
 pattern of adding `_present` to the method name. For example, given `Present(Some(100))`, `unwrap()` will return `100` whereas `unwrap_present()` will return `Some(100)`.
 
 ```rust
