@@ -1,5 +1,7 @@
 # Optional Field
 
+> Want to write Rust for a living? CV Partner is hiring Rust developers in London, Oslo, Copenhagen and Stockholm. [See the careers page](https://www.cvpartner.com/careers)
+
 Provides a Rust type and serialization/deserialization implementations for values that can be represented
 by 3 states: missing, present but null and present with a value.
 
