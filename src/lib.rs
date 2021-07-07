@@ -653,6 +653,38 @@ impl<T: DerefMut> Field<T> {
     }
 }
 
+impl<T> Field<T>
+where
+    T: Clone + PartialEq,
+{
+    /// Returns a new Field<T> which is the difference between
+    /// `Self` and `other`.
+    ///
+    /// Assumes `Self` is the current value and `other` is the "new" value,
+    /// it evaluates if the value has changed and if so returns a field
+    /// with the new value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{self, *};
+    /// let old = Present(Some("oh hai"));
+    /// // Values are the same
+    /// assert_eq!(Missing, old.delta(&Present(Some("oh hai"))));
+    /// // There is no new value to compare
+    /// assert_eq!(Missing, old.delta(&Missing));
+    /// // The value has changed
+    /// assert_eq!(Present(Some("new")), old.delta(&Present(Some("new"))));
+    /// ```
+    pub fn delta(&self, other: &Field<T>) -> Field<T> {
+        if self != other && other.has_value() {
+            return other.clone();
+        }
+
+        Field::Missing
+    }
+}
+
 #[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for Field<T>
 where
