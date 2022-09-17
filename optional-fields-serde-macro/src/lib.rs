@@ -28,8 +28,8 @@ fn add_serde_optional_fields(field: &mut Field) -> Result<(), String> {
     if let Type::Path(path) = &field.ty {
         if is_field(&path.path) {
             let has_skip_serializing_if =
-                field_has_attribute(&field, "serde", "skip_serializing_if");
-            let has_default = field_has_attribute(&field, "serde", "default");
+                field_has_attribute(field, "serde", "skip_serializing_if");
+            let has_default = field_has_attribute(field, "serde", "default");
 
             if !has_skip_serializing_if {
                 let attr_tokens = quote!(
