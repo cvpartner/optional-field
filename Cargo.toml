@@ -16,7 +16,7 @@ keywords = ["serde", "trinary", "option", "field"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true }
-optional-fields-serde-macro = { path = "./optional-fields-serde-macro", version = "0.1.0" }
+optional-fields-serde-macro = { path = "./optional-fields-serde-macro", version = "0.1.1" }
 
 [dev-dependencies]
 serde_json = { version = "1" }
