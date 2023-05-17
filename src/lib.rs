@@ -6,8 +6,9 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "serde")]
 pub use optional_fields_serde_macro::serde_optional_fields;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Field<T> {
+    #[default]
     Missing,
     Present(Option<T>),
 }
@@ -492,6 +493,114 @@ impl<T> Field<T> {
             Missing => Err(err()),
         }
     }
+
+    /// Returns [`None`] if the option is [`None`], otherwise returns `fieldb`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x = Present(Some(2));
+    /// let y: Field<&str> = Present(None);
+    /// assert_eq!(x.and(y), Present(None));
+    ///
+    /// let x: Field<u32> = Present(None);
+    /// let y = Present(Some("foo"));
+    /// assert_eq!(x.and(y), Present(None));
+    ///
+    /// let x = Present(Some(2));
+    /// let y = Present(Some("foo"));
+    /// assert_eq!(x.and(y), Present(Some("foo")));
+    ///
+    /// let x: Field<u32> = Present(None);
+    /// let y: Field<&str> = Present(None);
+    /// assert_eq!(x.and(y), Present(None));
+
+    /// let x: Field<u32> = Missing;
+    /// let y: Field<&str> = Missing;
+    /// assert_eq!(x.and(y), Missing);
+    /// ```
+    pub fn and<U>(self, fieldb: Field<U>) -> Field<U> {
+        match self {
+            Present(Some(_)) => fieldb,
+            Present(None) => Present(None),
+            Missing => Missing,
+        }
+    }
+
+    /// Returns [`None`] if the option is [`None`], otherwise returns `fieldb`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x = Present(Some(2));
+    /// let y: Field<&str> = Present(None);
+    /// assert_eq!(x.and(y), Present(None));
+    ///
+    /// let x: Field<u32> = Present(None);
+    /// let y = Present(Some("foo"));
+    /// assert_eq!(x.and(y), Present(None));
+    ///
+    /// let x = Present(Some(2));
+    /// let y = Present(Some("foo"));
+    /// assert_eq!(x.and(y), Present(Some("foo")));
+    ///
+    /// let x: Field<u32> = Present(None);
+    /// let y: Field<&str> = Present(None);
+    /// assert_eq!(x.and(y), Present(None));
+
+    /// let x: Field<u32> = Missing;
+    /// let y: Field<&str> = Missing;
+    /// assert_eq!(x.and(y), Missing);
+    /// ```
+    pub fn and_present<U>(self, fieldb: Field<U>) -> Field<U> {
+        match self {
+            Present(_) => fieldb,
+            Missing => Missing,
+        }
+    }
+
+    /// Returns [`Missing`] if the field is [`Missing`], Present(None) if the field
+    /// is Present(None), otherwise calls `f` with the wrapped value and returns the result.
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<&str> = Present(Some("foo"));
+    /// assert_eq!(x.clone().and_then(|_s| Present(Some(1)) ), Present(Some(1)));
+    /// assert_eq!(x.clone().and_then(|_s| Missing::<u8> ), Missing::<u8>);
+    /// assert_eq!(x.and_then(|_s| Present::<u8>(None) ), Present::<u8>(None));
+    /// ```
+    pub fn and_then<U, F>(self, f: F) -> Field<U>
+    where
+        F: FnOnce(T) -> Field<U>,
+    {
+        match self {
+            Present(Some(x)) => f(x),
+            Present(None) => Present(None),
+            Missing => Missing,
+        }
+    }
+
+    /// Returns [`Missing`] if the field is [`Missing`], otherwise calls `f`
+    /// with the wrapped value and returns the result.
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<&str> = Present(Some("foo"));
+    /// assert_eq!(x.clone().and_then_present(|_s| Present(Some(1)) ), Present(Some(1)));
+    /// assert_eq!(x.clone().and_then_present(|_s| Missing::<u8> ), Missing::<u8>);
+    /// assert_eq!(x.and_then_present(|_s| Present::<u8>(None) ), Present::<u8>(None));
+    /// ```
+    pub fn and_then_present<U, F>(self, f: F) -> Field<U>
+    where
+        F: FnOnce(Option<T>) -> Field<U>,
+    {
+        match self {
+            Present(x) => f(x),
+            Missing => Missing,
+        }
+    }
 }
 
 impl<T: Default> Field<T> {
@@ -507,12 +616,6 @@ impl<T: Default> Field<T> {
             Present(x) => x,
             Missing => Default::default(),
         }
-    }
-}
-
-impl<T> Default for Field<T> {
-    fn default() -> Self {
-        Missing
     }
 }
 

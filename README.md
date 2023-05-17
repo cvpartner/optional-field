@@ -84,7 +84,7 @@ wish to use `optional-field` without pulling in serde you can set `default-featu
 
 ```toml
 [dependencies]
-optional-field = { version = "0.1.3", default-features = false }
+optional-field = { version = "0.1.4", default-features = false }
 ```
 
 ## License
