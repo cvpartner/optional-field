@@ -33,7 +33,7 @@ fn add_serde_optional_fields(field: &mut Field) -> Result<(), String> {
 
             if !has_skip_serializing_if {
                 let attr_tokens = quote!(
-                    #[serde(skip_serializing_if = "Field::is_missing")]
+                    #[serde(skip_serializing_if = "optional_field::Field::is_missing")]
                 );
                 let parser = Attribute::parse_outer;
                 let attrs = parser
@@ -66,7 +66,7 @@ fn is_field(path: &Path) -> bool {
     (path.leading_colon.is_none() && path.segments.len() == 1 && path.segments[0].ident == "Field")
         || (path.segments.len() == 2
             && (path.segments[0].ident == "optional_field")
-            && path.segments[2].ident == "Field")
+            && path.segments[1].ident == "Field")
 }
 
 /// Determine if the `field` has an attribute with given `namespace` and `name`

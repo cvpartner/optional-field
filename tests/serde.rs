@@ -122,3 +122,26 @@ fn serialize_missing() {
         json
     );
 }
+
+#[test]
+fn with_fqn() {
+    #[serde_optional_fields]
+    #[derive(Debug, Serialize, Deserialize)]
+    struct WithFqn {
+        field: optional_field::Field<u8>,
+    }
+    let thing = WithFqn {
+        field: optional_field::Field::Present(Some(1)),
+    };
+
+    let json = serde_json::to_value(thing).unwrap();
+
+    assert_eq!(
+        json!(
+            {
+                "field": 1,
+            }
+        ),
+        json
+    );
+}
