@@ -305,9 +305,9 @@ impl<T> Field<T> {
         match self {
             Present(Some(t)) => t,
             Present(None) => {
-                panic!("called `Field::unwrap_value()` on a `Present(None)` value")
+                panic!("called `Field::unwrap()` on a `Present(None)` value")
             }
-            Missing => panic!("called `Field::unwrap_value()` on a `Missing` value"),
+            Missing => panic!("called `Field::unwrap()` on a `Missing` value"),
         }
     }
 
@@ -328,12 +328,64 @@ impl<T> Field<T> {
     /// ```should_panic
     /// # use optional_field::Field::{*, self};
     /// let x: Field<&str> = Missing;
-    /// assert_eq!(x.unwrap(), "air"); // fails
+    /// assert_eq!(x.unwrap_present(), Some("air")); // fails
     /// ```
     pub fn unwrap_present(self) -> Option<T> {
         match self {
             Present(val) => val,
-            Missing => panic!("called `Field::unwrap()` on a `Missing` value"),
+            Missing => panic!("called `Field::unwrap_present()` on a `Missing` value"),
+        }
+    }
+
+    /// Returns a reference to the contained option.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the self value equals [`Missing`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let x = Present(Some("air"));
+    /// assert_eq!(x.unwrap_present_ref(), &Some("air"));
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use optional_field::Field::{*, self};
+    /// let x: Field<&str> = Missing;
+    /// assert_eq!(x.unwrap_present_ref(), &Some("air")); // fails
+    /// ```
+    pub fn unwrap_present_ref(&self) -> &Option<T> {
+        match self {
+            Present(ref val) => val,
+            Missing => panic!("called `Field::unwrap_present_ref()` on a `Missing` value"),
+        }
+    }
+
+    /// Returns a mutable reference to the contained option.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the self value equals [`Missing`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let mut x = Present(Some("air"));
+    /// assert_eq!(x.unwrap_present_mut(), &mut Some("air"));
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use optional_field::Field::{*, self};
+    /// let mut x: Field<&str> = Missing;
+    /// assert_eq!(x.unwrap_present_mut(), &mut Some("air")); // fails
+    /// ```
+    pub fn unwrap_present_mut(&mut self) -> &mut Option<T> {
+        match self {
+            Present(ref mut val) => val,
+            Missing => panic!("called `Field::unwrap_present_mut()` on a `Missing` value"),
         }
     }
 
@@ -600,6 +652,122 @@ impl<T> Field<T> {
             Present(x) => f(x),
             Missing => Missing,
         }
+    }
+
+    /// Inserts `value` into the option if it is [`Missing`] or [Present(None)], then
+    /// returns a mutable reference to the contained value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let mut x = Missing;
+    ///
+    /// {
+    ///     let y: &mut u32 = x.get_or_insert(5);
+    ///     assert_eq!(y, &5);
+    ///
+    ///     *y = 7;
+    /// }
+    ///
+    /// assert_eq!(x, Present(Some(7)));
+    /// ```
+    pub fn get_or_insert(&mut self, value: T) -> &mut T {
+        match *self {
+            Missing | Present(None) => {
+                *self = Present(Some(value));
+            }
+            _ => {}
+        }
+
+        self.as_mut().unwrap()
+    }
+
+    /// Inserts `value` into the option if it is [`Missing`] or [Present(None)], then
+    /// returns a mutable reference to the contained value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let mut x = Missing;
+    ///
+    /// {
+    ///     let y: &mut Option<u32> = x.get_or_insert_present(Some(5));
+    ///     assert_eq!(y, &Some(5));
+    ///
+    ///     *y = Some(7);
+    /// }
+    ///
+    /// assert_eq!(x, Present(Some(7)));
+    /// ```
+    pub fn get_or_insert_present(&mut self, value: Option<T>) -> &mut Option<T> {
+        if let Missing = *self {
+            *self = Present(value);
+        }
+
+        self.unwrap_present_mut()
+    }
+
+    /// Inserts a value computed from `f` into the option if it is [`Missing`] or [Present(None)],
+    /// then returns a mutable reference to the contained value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let mut x = Missing;
+    ///
+    /// {
+    ///     let y: &mut u32 = x.get_or_insert_with(|| 5);
+    ///     assert_eq!(y, &5);
+    ///
+    ///     *y = 7;
+    /// }
+    ///
+    /// assert_eq!(x, Present(Some(7)));
+    /// ```
+    pub fn get_or_insert_with<F>(&mut self, f: F) -> &mut T
+    where
+        F: FnOnce() -> T,
+    {
+        match self {
+            Missing | Present(None) => {
+                *self = Present(Some(f()));
+            }
+            _ => {}
+        }
+
+        self.as_mut().unwrap()
+    }
+
+    /// Inserts a value computed from `f` into the option if it is [`Missing`] or [Present(None)],
+    /// then returns a mutable reference to the contained value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional_field::Field::{*, self};
+    /// let mut x = Missing;
+    ///
+    /// {
+    ///     let y: &mut u32 = x.get_or_insert_with(|| 5);
+    ///     assert_eq!(y, &5);
+    ///
+    ///     *y = 7;
+    /// }
+    ///
+    /// assert_eq!(x, Present(Some(7)));
+    /// ```
+    pub fn get_or_insert_with_present<F>(&mut self, f: F) -> &mut Option<T>
+    where
+        F: FnOnce() -> Option<T>,
+    {
+        if let Missing = self {
+            *self = Present(f());
+        }
+
+        self.unwrap_present_mut()
     }
 }
 
