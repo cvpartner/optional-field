@@ -21,6 +21,7 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: publish crates
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: katyo/publish-crates@v1
       with:
         registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
