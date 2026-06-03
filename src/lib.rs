@@ -567,7 +567,7 @@ impl<T> Field<T> {
     /// let x: Field<u32> = Present(None);
     /// let y: Field<&str> = Present(None);
     /// assert_eq!(x.and(y), Present(None));
-
+    ///
     /// let x: Field<u32> = Missing;
     /// let y: Field<&str> = Missing;
     /// assert_eq!(x.and(y), Missing);
@@ -601,7 +601,7 @@ impl<T> Field<T> {
     /// let x: Field<u32> = Present(None);
     /// let y: Field<&str> = Present(None);
     /// assert_eq!(x.and(y), Present(None));
-
+    ///
     /// let x: Field<u32> = Missing;
     /// let y: Field<&str> = Missing;
     /// assert_eq!(x.and(y), Missing);

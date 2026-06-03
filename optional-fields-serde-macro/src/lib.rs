@@ -4,7 +4,7 @@ mod util;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse::Parser, Attribute, Field, Meta, NestedMeta, Path, Type};
+use syn::{parse::Parser, Attribute, Field, Path, Type};
 
 use util::apply_function_to_struct_and_enum_fields;
 
@@ -80,18 +80,16 @@ fn is_field(path: &Path) -> bool {
 /// * with the name being `skip_serializing_if`
 fn field_has_attribute(field: &Field, namespace: &str, name: &str) -> bool {
     for attr in &field.attrs {
-        if attr.path.is_ident(namespace) {
-            // Ignore non parsable attributes, as these are not important for us
-            if let Ok(Meta::List(expr)) = attr.parse_meta() {
-                for expr in expr.nested {
-                    if let NestedMeta::Meta(Meta::NameValue(expr)) = expr {
-                        if let Some(ident) = expr.path.get_ident() {
-                            if *ident == name {
-                                return true;
-                            }
-                        }
-                    }
+        if attr.path().is_ident(namespace) {
+            let mut found = false;
+            let _ = attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident(name) {
+                    found = true;
                 }
+                Ok(())
+            });
+            if found {
+                return true;
             }
         }
     }
