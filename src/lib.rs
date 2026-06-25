@@ -985,3 +985,51 @@ where
         }
     }
 }
+
+#[cfg(feature = "postgres-types")]
+mod postgres_types_impl {
+    use super::{Field, Missing, Present};
+    use bytes::BytesMut;
+    use postgres_types::{FromSql, IsNull, ToSql, Type};
+    use std::error::Error;
+
+    impl<'a, T> FromSql<'a> for Field<T>
+    where
+        T: FromSql<'a>,
+    {
+        fn from_sql(ty: &Type, raw: &'a [u8]) -> Result<Self, Box<dyn Error + Sync + Send>> {
+            T::from_sql(ty, raw).map(|value| Present(Some(value)))
+        }
+
+        fn from_sql_null(_: &Type) -> Result<Self, Box<dyn Error + Sync + Send>> {
+            Ok(Present(None))
+        }
+
+        fn accepts(ty: &Type) -> bool {
+            T::accepts(ty)
+        }
+    }
+
+    impl<T> ToSql for Field<T>
+    where
+        T: ToSql,
+    {
+        fn to_sql(
+            &self,
+            ty: &Type,
+            out: &mut BytesMut,
+        ) -> Result<IsNull, Box<dyn Error + Sync + Send>> {
+            match self {
+                Present(Some(value)) => value.to_sql(ty, out),
+                // PostgreSQL values can be null, but they cannot be missing.
+                Present(None) | Missing => Ok(IsNull::Yes),
+            }
+        }
+
+        fn accepts(ty: &Type) -> bool {
+            T::accepts(ty)
+        }
+
+        ::postgres_types::to_sql_checked!();
+    }
+}
