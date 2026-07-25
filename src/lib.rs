@@ -1021,8 +1021,8 @@ mod postgres_types_impl {
         ) -> Result<IsNull, Box<dyn Error + Sync + Send>> {
             match self {
                 Present(Some(value)) => value.to_sql(ty, out),
-                // PostgreSQL values can be null, but they cannot be missing.
-                Present(None) | Missing => Ok(IsNull::Yes),
+                Present(None) => Ok(IsNull::Yes),
+                Missing => Err("Field::Missing cannot be bound as a SQL parameter".into()),
             }
         }
 
